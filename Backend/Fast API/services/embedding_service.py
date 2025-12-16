@@ -1,122 +1,106 @@
-# services/embedding_service.py
+# services/embedding_service.py (Optimized - Using Gemini)
 
-from typing import List, Union
-import numpy as np
-from sentence_transformers import SentenceTransformer
-# يجب توفير اسم النموذج في ملف .env أو كمتغير ثابت
-# MODEL_NAME هو الاسم المفترض لـ 'paraphrase-multilingual-mpnet-base-v2'
-MODEL_NAME = "paraphrase-multilingual-mpnet-base-v2" 
-
-# استدعاء قاعدة البيانات MongoDB للحفظ
-from config.database_config import db 
-import warnings
 import os
+import numpy as np
+import google.generativeai as genai
+from typing import List, Union
+from config.database_config import db
+from dotenv import load_dotenv
 
-# 🚨 ثوابت الأبعاد 🚨
-# الأبعاد الصحيحة للنموذج المستخدم
-VECTOR_DIMENSION = 768 
+load_dotenv()
+
+# 🚨 أبعاد المتجه لـ Gemini embeddings
+VECTOR_DIMENSION = 768
 
 class EmbeddingService:
     def __init__(self):
-        self.model_name = MODEL_NAME
+        """
+        استخدام Gemini API للـ embeddings بدلاً من sentence-transformers
+        أخف وأسرع وبدون مكتبات ثقيلة!
+        """
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            raise ValueError("❌ GEMINI_API_KEY غير موجود في ملف .env")
+        
+        genai.configure(api_key=api_key)
         self.vector_size = VECTOR_DIMENSION
-        # ✅ الخاصية التي يبحث عنها سكريبت reindex_projects.py
-        self.embedding_dim = self.vector_size 
-
-        # 🔄 الاتصال وتحميل النموذج باستخدام SentenceTransformer
-        # تم دمج منطق تحميل النموذج الذي أرسلته مع التعديلات
-        print("🚀 تحميل نموذج Embedding...")
+        self.embedding_dim = self.vector_size
         
-        # تعطيل تحذيرات التحويل أثناء تحميل النموذج
-        warnings.filterwarnings("ignore")
-        
-        try:
-            # استخدام 'cpu' إذا لم يتم تعيينه لتجنب مشكلات GPU إذا كانت غير مدعومة
-            self.model = SentenceTransformer(self.model_name, device='cpu') 
-            print(f"✅ تم تحميل النموذج بنجاح: {self.model_name} (Dim: {self.vector_size})")
-        except Exception as e:
-            print(f"❌ خطأ فادح في تحميل النموذج {self.model_name}: {e}")
-            self.model = None
-        
-        warnings.filterwarnings("default")
-
+        print(f"✅ Embedding Service initialized (Gemini API, Dim: {self.vector_size})")
     
     def embed_text(self, text: Union[str, List[str]]) -> List[float]:
         """
-        توليد متجه نصي (Embedding) باستخدام SentenceTransformer.
-        استبدلت create_text_embedding بـ embed_text لتوحيد الأسماء.
+        توليد متجه نصي (Embedding) باستخدام Gemini API
         """
-        # إذا لم يتم تحميل النموذج بنجاح
-        if self.model is None:
-            print("❌ النموذج غير محمل. تعذر إنشاء المتجه.")
-            return []
-            
-        # الحماية 1: التحقق من النص الفارغ أو المسافات البيضاء
+        # الحماية: التحقق من النص الفارغ
         if not text or (isinstance(text, str) and not text.strip()):
-            # إرجاع vector صفري بنفس الحجم (768) لتمثيل "لا معلومة"
             return [0.0] * self.vector_size
         
-        # التأكد من أن الإدخال عبارة عن قائمة لـ .encode
-        if isinstance(text, str):
-            text = [text]
-
+        # التأكد من أن الإدخال string
+        if isinstance(text, list):
+            text = text[0] if text else ""
+        
         try:
-            # نستخدم convert_to_numpy=True لضمان الأداء الأسرع
-            embedding_np = self.model.encode(text, convert_to_numpy=True)[0] 
+            # استخدام Gemini embedding API
+            result = genai.embed_content(
+                model="models/embedding-001",
+                content=text,
+                task_type="retrieval_document"
+            )
             
-            # التأكد من أن المتجه له الحجم الصحيح (768)
-            if len(embedding_np) != self.vector_size:
-                raise ValueError(f"حجم المتجه غير متوقع: {len(embedding_np)}، المتوقع: {self.vector_size}")
-
-            return embedding_np.tolist()
+            embedding = result['embedding']
+            
+            # التأكد من الحجم الصحيح
+            if len(embedding) != self.vector_size:
+                # تعديل الحجم إذا لزم الأمر
+                if len(embedding) > self.vector_size:
+                    embedding = embedding[:self.vector_size]
+                else:
+                    embedding = embedding + [0.0] * (self.vector_size - len(embedding))
+            
+            return embedding
             
         except Exception as e:
-            # هذا الجزء سيكشف سبب الفشل الحقيقي
-            print(f"❌ فشل توليد المتجه للنص: '{text[0][:50]}...'")
-            print(f"❌ نوع الخطأ: {type(e).__name__} - رسالة الخطأ: {e}")
-            return []
-
+            print(f"❌ فشل توليد المتجه: {str(e)}")
+            print(f"   النص: '{text[:50]}...'")
+            return [0.0] * self.vector_size
+    
     def cosine_similarity(self, vec1: Union[np.ndarray, List[float]], vec2: Union[np.ndarray, List[float]]) -> float:
         """
-        حساب تشابه الكوساين بين متجهين باستخدام NumPy.
+        حساب تشابه الكوساين بين متجهين
         """
-        # التأكد من أن الإدخال NumPy arrays
         vec1_np = np.array(vec1) if not isinstance(vec1, np.ndarray) else vec1
         vec2_np = np.array(vec2) if not isinstance(vec2, np.ndarray) else vec2
-
+        
         norm1 = np.linalg.norm(vec1_np)
         norm2 = np.linalg.norm(vec2_np)
         
         if norm1 == 0 or norm2 == 0:
             return 0.0
-            
+        
         similarity = np.dot(vec1_np, vec2_np) / (norm1 * norm2)
-        return float(np.clip(similarity, -1.0, 1.0)) 
-
+        return float(np.clip(similarity, -1.0, 1.0))
+    
     def generate_and_save_supervisor_embedding(self, supervisor_data: dict, paper_titles: List[str]):
         """
-        توليد متجه يمثل التخصص البحثي للمشرف وحفظه في وثيقة المشرف (MongoDB).
+        توليد متجه يمثل التخصص البحثي للمشرف
         """
-        # 1. تجميع النص
+        # تجميع النص
         text_to_embed = (
-            f"Supervisor Name: {supervisor_data.get('Name', '')}. " 
-            f"Department: {supervisor_data.get('Department', '')}. " 
+            f"Supervisor Name: {supervisor_data.get('Name', '')}. "
+            f"Department: {supervisor_data.get('Department', '')}. "
             f"Research Interests: " + " | ".join(paper_titles)
         )
         
-        # 2. توليد المتجه
-        # ⚠️ استخدام embed_text بدلاً من create_text_embedding
-        research_embedding = self.embed_text(text_to_embed) 
+        # توليد المتجه
+        research_embedding = self.embed_text(text_to_embed)
         
-        # 3. الحفظ في MongoDB
+        # الحفظ في MongoDB
         supervisor_id = supervisor_data.get("_id")
-        # التحقق من أن المتجه غير فارغ وأن حجمه صحيح (768)
         if supervisor_id and research_embedding and len(research_embedding) == self.vector_size:
-            # ⚠️ يجب التأكد من استخدام اسم المجموعة الصحيح للمشرفين، الذي تم تعيينه إلى 'Supervisor'
-            # في database_config.py
-            db["Supervisor"].update_one( 
+            db["Supervisor"].update_one(
                 {"_id": supervisor_id},
-                {"$set": {"research_embedding": research_embedding, "enriched": True}} # ✅ إضافة حقل enriched
+                {"$set": {"research_embedding": research_embedding, "enriched": True}}
             )
             print(f"✅ تم تحديث المتجه البحثي للمشرف ID: {supervisor_id}")
             return research_embedding
