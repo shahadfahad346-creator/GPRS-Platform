@@ -1,46 +1,44 @@
 # ========================================
 # 🔧 Build Essentials
 # ========================================
-setuptools>=65.0.0
-wheel>=0.40.0
+setuptools>=70.0.0
+wheel>=0.42.0
 
 # ========================================
 # 🌐 Web Framework
 # ========================================
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-python-multipart==0.0.6
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+python-multipart==0.0.12
 
 # ========================================
 # 🗄️ Database
 # ========================================
-pymongo==4.6.0
-dnspython==2.4.2
+pymongo==4.10.1
+dnspython==2.7.0
 
 # ========================================
 # 🤖 AI & Embeddings
 # ========================================
-google-generativeai==0.3.1
-
-# Embeddings: استخدام Gemini API مباشرة بدلاً من sentence-transformers
-# لا حاجة لـ sentence-transformers إذا استخدمنا Gemini embeddings
+google-generativeai==0.8.3
 
 # ========================================
 # 🔍 Vector Search
 # ========================================
-qdrant-client==1.7.0
+qdrant-client==1.12.1
 
 # ========================================
 # 🔐 Authentication & Security
 # ========================================
 passlib[bcrypt]==1.7.4
 python-jose[cryptography]==3.3.0
-bcrypt==4.1.2
+bcrypt==4.2.1
 
 # ========================================
 # 🛠️ Utilities
 # ========================================
 python-dotenv==1.0.1
-pydantic==2.5.0
-requests==2.31.0
-numpy==1.24.3
+pydantic==2.10.3
+pydantic-settings==2.7.0
+requests==2.32.3
+numpy==2.2.1
