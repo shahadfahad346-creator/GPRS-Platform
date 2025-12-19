@@ -19,9 +19,17 @@ from werkzeug.security import generate_password_hash
 app = Flask(__name__)
 
 
+from flask_cors import CORS
+
+app = Flask(__name__)
+
+# ✅ إضافة Frontend URL
 CORS(app, resources={
     r"/*": {
-        "origins": "http://localhost:3000",
+        "origins": [
+            "http://localhost:5173",
+            "https://gprs-frontend.onrender.com"  # ← أضف هذا
+        ],
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"]
     }
