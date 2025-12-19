@@ -5,10 +5,13 @@
 
   export default defineConfig({
     plugins: [react()],
+    
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       alias: {
         'vaul@1.1.2': 'vaul',
+        '@lib': path.resolve(__dirname, './lib'),   // ← سطر جديد
+        '@config': path.resolve(__dirname, './lib/config'), // اختياري
         'sonner@2.0.3@2.0.3': 'sonner@2.0.3',
         'recharts@2.15.2': 'recharts',
         'react-resizable-panels@2.1.7': 'react-resizable-panels',

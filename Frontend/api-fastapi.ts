@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { API_BASE_URL, ENDPOINTS, STORAGE_KEYS } from './config';
+import { API_BASE_URL, ENDPOINTS, STORAGE_KEYS } from '../Frontend/components/config';
 import  { AxiosResponse, AxiosError} from 'axios';
 import { InternalAxiosRequestConfig } from 'axios';
 

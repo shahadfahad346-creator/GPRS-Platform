@@ -11,7 +11,7 @@ import {
   RegisterRequest, 
   AuthResponse 
 } from './api-fastapi';
-import { STORAGE_KEYS, API_BASE_URL, ENDPOINTS } from './config';
+import { STORAGE_KEYS, API_BASE_URL, ENDPOINTS } from "./components/config";
 
 interface AuthContextType {
   isAuthenticated: boolean;

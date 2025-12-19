@@ -14,6 +14,7 @@ import bcrypt
 from werkzeug.security import generate_password_hash, check_password_hash 
 
 
+
 from werkzeug.security import generate_password_hash 
 app = Flask(__name__)
 
@@ -220,25 +221,6 @@ def login():
             "error": "An internal server error occurred"
         }), 500
       
-        # Convert arrays
-        user['specialization'] = user.get('specialization')
-        user['skills'] = ensure_array(user.get('skills', []))
-        user['frameworks'] = ensure_array(user.get('frameworks', []))
-        user['groupMembers'] = user.get('groupMembers', [])
-        user['teamInvitations'] = user.get('teamInvitations', [])
-        user['researchInterests'] = ensure_array(user.get('researchInterests', []))
-        
-        # Remove password from response
-        user_response = serialize_doc(user)
-        user_response.pop('password', None)
-        
-        print(f"âœ… [Login] Success: {email}")
-        
-        return jsonify({
-            "success": True,
-            "token": "dummy-token-" + str(user['_id']),
-            "user": user_response
-        }), 200
         
     except Exception as e:
         print(f"âŒ [Login] Error: {str(e)}")
@@ -247,62 +229,39 @@ def login():
             "error": str(e)
         }), 500
     
-    
 @app.route('/api/auth/signup', methods=['POST', 'OPTIONS'])
 def signup():
-    # 1. التعامل مع طلب CORS المبدئي (Preflight)
     if request.method == 'OPTIONS':
-        # يجب إضافة رؤوس CORS للسماح بالطلب من متصفحات الويب
-        response = jsonify({})
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-        response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
-        return response, 204
-    
+        return '', 204
+
     try:
         data = request.get_json()
         email = data.get('email')
-        password_raw = data.get('password') # نحتفظ بكلمة المرور الأصلية هنا
+        password_raw = data.get('password')
         name = data.get('name')
         role = data.get('role')
-        
-        print(f"🔍 [Signup] Attempt: {email}, name: {name}, role: {role}")
-        
-        if not email or not password_raw or not name or not role:
-            return jsonify({
-                "success": False,
-                "error": "All fields (email, password, name, role) are required"
-            }), 400
-        
-        if role not in ['student', 'supervisor']:
-            return jsonify({
-                "success": False,
-                "error": "Invalid role. Must be 'student' or 'supervisor'"
-            }), 400
-        
-        # Check if user exists
-        existing_user = db.users.find_one({"email": email})
-        if existing_user:
-            print(f"❌ [Signup] User already exists: {email}")
-            return jsonify({
-                "success": False,
-                "error": "Email is already in use"
-            }), 409
-        
-        # 2. خطوة أمنية حرجة: تشفير كلمة المرور قبل التخزين
-        # نستخدم generate_password_hash لتخزين تجزئة كلمة المرور بدلاً من النص الصريح
-        hashed_password = generate_password_hash(password_raw, method='pbkdf2:sha256', salt_length=16)
 
-        # Create new user with role-specific fields
+        if not all([email, password_raw, name, role]):
+            return jsonify({"success": False, "error": "جميع الحقول مطلوبة"}), 400
+
+        if role not in ['student', 'supervisor']:
+            return jsonify({"success": False, "error": "الدور غير صحيح"}), 400
+
+        # تحقق من وجود الحساب في users
+        if db.users.find_one({"email": {"$regex": f"^{re.escape(email)}$", "$options": "i"}}):
+            return jsonify({"success": False, "error": "الإيميل مستخدم من قبل"}), 409
+
+        hashed_password = generate_password_hash(password_raw)
+
         new_user = {
             "name": name,
             "email": email,
-            "password": hashed_password, # تخزين كلمة المرور المشفرة
+            "password": hashed_password,
             "role": role,
-            "hasProfile": role == 'supervisor',
+            "hasProfile": False,
             "createdAt": datetime.utcnow().isoformat()
         }
-        
+
         if role == 'student':
             new_user.update({
                 "groupMembers": [],
@@ -310,42 +269,66 @@ def signup():
                 "savedIdeas": [],
                 "skills": [],
                 "frameworks": [],
-                "researchInterests": [],
                 "groupName": None
             })
-        else:  # supervisor
-            new_user.update({
-                "department": None,
-                "office": None,
-                "researchInterests": [],
-                "publications": 0,
-                "activeProjects": 0,
-                "researchPapers": []
-            })
-        
+
         result = db.users.insert_one(new_user)
-        new_user['_id'] = result.inserted_id
-        
-        # Remove password HASH from response (حتى التجزئة لا يجب إرسالها للعميل)
+        user_id = str(result.inserted_id)
+
+        # لو مشرف → نحدث السجل القديم في Supervisor أو ننشئ واحد جديد
+        if role == 'supervisor':
+            # نبحث عن السجل القديم بالإيميل (مهما كانت حالة الأحرف)
+            existing_sup = db.Supervisor.find_one({
+                "Email": {"$regex": f"^{re.escape(email)}$", "$options": "i"}
+            })
+
+            if existing_sup:
+                # لو موجود → نحدث فقط الحقول المهمة (ما نمسح شيء!)
+                db.Supervisor.update_one(
+                    {"_id": existing_sup["_id"]},
+                    {
+                        "$set": {
+                            "Name": name,
+                            "Email": email,
+                            "userId": user_id,  # نضيف الربط بالحساب الجديد
+                            "last_updated": datetime.utcnow().isoformat()
+                        },
+                        "$setOnInsert": {  # هذي الأهم: ما تشتغل إلا لو السجل جديد
+                            "Department": "",
+                            "Researcg_interest": [],
+                            "Research": []
+                        }
+                    },
+                    upsert=True
+                )
+                print(f"تم ربط الحساب الجديد مع السجل القديم لـ {email}")
+            else:
+                # لو ما لقيناه → ننشئ سجل جديد
+                db.Supervisor.insert_one({
+                    "Name": name,
+                    "Email": email,
+                    "Department": "",
+                    "Researcg_interest": [],
+                    "Research": [],
+                    "userId": user_id,
+                    "last_updated": datetime.utcnow().isoformat()
+                })
+                print(f"تم إنشاء سجل جديد في Supervisor لـ {email}")
+
         user_response = serialize_doc(new_user)
         user_response.pop('password', None)
-        
-        print(f"✅ [Signup] User created: {email}")
-        
+
         return jsonify({
             "success": True,
-            "token": "dummy-token-" + str(result.inserted_id),
+            "token": "dummy-token-" + user_id,
             "user": user_response
-        }), 201 
-        
+        }), 201
+
     except Exception as e:
-        print(f"❌ [Signup] Error: {str(e)}")
-        return jsonify({
-            "success": False,
-            "error": "An internal server error occurred"
-        }), 500
-    
-    # ⭐⭐⭐ Forgot Password API - أضف هنا ⭐⭐⭐
+        print(f"[Signup] Error: {str(e)}")
+        traceback.print_exc()
+        return jsonify({"success": False, "error": "خطأ في السيرفر"}), 500
+
 @app.route('/api/auth/forgot-password', methods=['POST', 'OPTIONS'])
 def forgot_password():
     """Send OTP to user's email for password reset"""
@@ -2033,28 +2016,25 @@ def update_supervisor_profile():
         print(f"[UpdateProfile] Error: {str(e)}")
         return jsonify({"success": False, "error": str(e)}), 500
 
-
 @app.route('/api/supervisor/full-profile/<supervisor_id>', methods=['GET'])
 def get_supervisor_full_profile(supervisor_id):
     try:
-        print(f"\n🔍 Fetching supervisor profile for ID: {supervisor_id}")
-        
-        
+        print(f"\n🔍 Fetching supervisor profile for Supervisor ID: {supervisor_id}")
+
+        # 1. جلب بيانات المشرف من collection Supervisor
         sup = db.Supervisor.find_one({"_id": ObjectId(supervisor_id)})
         
         if not sup:
-            
+            # fallback قديم
             user = db.users.find_one({"_id": ObjectId(supervisor_id), "role": "supervisor"})
             if not user:
                 return jsonify({"success": False, "error": "Supervisor not found"}), 404
-            
             
             sup = db.Supervisor.find_one({
                 "Email": {"$regex": f"^{re.escape(user['email'])}$", "$options": "i"}
             })
             
             if not sup:
-                
                 profile = {
                     "_id": supervisor_id,
                     "name": user.get("name", "Unknown"),
@@ -2067,42 +2047,45 @@ def get_supervisor_full_profile(supervisor_id):
                 }
                 return jsonify({"success": True, "supervisor": profile}), 200
 
-        
-        supervisor_email = sup.get("Email", "")
-        ideas = list(db.ideas.find({
-            "$or": [
-                {"supervisorEmail": supervisor_email},
-                {"supervisorId": supervisor_id}
-            ]
-        }))
+        supervisor_email = sup.get("Email", "").strip()
 
-        
+        # 2. البحث عن الـ user المقابل في collection users بالإيميل للحصول على user._id
+        auth_user = None
+        if supervisor_email:
+            auth_user = db.users.find_one({
+                "email": {"$regex": f"^{re.escape(supervisor_email)}$", "$options": "i"},
+                "role": "supervisor"
+            })
+
+        user_supervisor_id = str(auth_user["_id"]) if auth_user else supervisor_id  # fallback للـ ID الأصلي لو ما لقينا
+
+        print(f"🔍 Supervisor Email: {supervisor_email}")
+        print(f"🔍 Corresponding User ID (for ideas): {user_supervisor_id}")
+
+        # 3. جلب الأفكار باستخدام user._id (اللي هو supervisorId المحفوظ في ideas)
+        ideas = list(db.ideas.find({"supervisorId": user_supervisor_id}))
+        print(f"✅ Found {len(ideas)} ideas using User ID: {user_supervisor_id}")
+
+        # 4. معالجة الأبحاث
         research_papers = []
         raw_research = sup.get("Research", [])
-        
         if isinstance(raw_research, list):
             for r in raw_research:
                 if isinstance(r, str):
-                    research_papers.append({
-                        "title": r,
-                        "platform": ""
-                    })
+                    research_papers.append({"title": r, "platform": ""})
                 elif isinstance(r, dict):
                     research_papers.append({
                         "title": r.get("title", "No Title"),
                         "platform": r.get("platform", "")
                     })
         elif isinstance(raw_research, str):
-            
             for line in raw_research.split("\n"):
                 if line.strip():
-                    research_papers.append({
-                        "title": line.strip(),
-                        "platform": ""
-                    })
+                    research_papers.append({"title": line.strip(), "platform": ""})
 
+        # 5. بناء البروفايل النهائي
         profile = {
-            "_id": supervisor_id,
+            "_id": supervisor_id,  # نرجع ID الـ Supervisor (للتوافق مع الفرونت)
             "name": sup.get("Name", "Unknown"),
             "email": supervisor_email,
             "department": sup.get("Department", ""),
@@ -2119,14 +2102,13 @@ def get_supervisor_full_profile(supervisor_id):
             ]
         }
 
-        print(f"✅ Returning profile with {len(ideas)} ideas and {len(research_papers)} papers")
+        print(f"✅ Returning full profile with {len(ideas)} ideas")
         return jsonify({"success": True, "supervisor": profile}), 200
 
     except Exception as e:
         print(f"❌ Error in full-profile: {str(e)}")
         traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
-
 @app.route('/api/group/agree-idea', methods=['POST', 'OPTIONS'])
 def agree_on_idea():
     if request.method == 'OPTIONS':

@@ -8,7 +8,7 @@ const isDevelopment = window.location.hostname === 'localhost' ||
 
 
 export const API_BASE_URL = isDevelopment
-  ? 'http://127.0.0.1:5000'  // ✅ يروح لـ Flask أولاً
+  ? 'http://127.0.0.1:8001'
   : 'https://your-production-domain.com';
 
 
@@ -54,7 +54,8 @@ export const ENDPOINTS = {
   
   ANALYSIS: {
     
-ANALYZE: '/api/analysis/analyze',     
+    ANALYZE: '/analysis/analyze',
+    
     
     BY_STUDENT: (studentId: string) => `/analysis/student-ideas/${studentId}`,
     
