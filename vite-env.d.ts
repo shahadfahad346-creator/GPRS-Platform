@@ -3,7 +3,6 @@
 interface ImportMetaEnv {
   readonly VITE_FLASK_API_URL: string
   readonly VITE_FASTAPI_URL: string
-  readonly NODE_ENV: string
 }
 
 interface ImportMeta {

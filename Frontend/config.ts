@@ -9,7 +9,7 @@ const isDevelopment =
 
 // 🔗 Flask API (Authentication & Teams)
 export const FLASK_API_URL = isDevelopment
-  ? 'http://localhost:5000'
+  ? 'http://127.0.0.1:5000'
   : (import.meta.env?.VITE_FLASK_API_URL || 'https://gprs-platform.onrender.com');
 
 // 🔗 FastAPI (Analysis & Projects)
