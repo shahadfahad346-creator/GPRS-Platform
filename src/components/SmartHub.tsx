@@ -13,7 +13,7 @@ import {
   Target,
   TrendingUp
 } from "lucide-react";
-import { useAuth } from "../../frontend/lib/auth-context";
+import { useAuth } from "../../Frontend/lib/auth-context";
 import { useState } from "react";
 import { InteractiveBackground } from "./Backgrounds";
 

@@ -1,11 +1,11 @@
 import { ArrowLeft, UsersIcon, Loader2, Sparkles, Search, GraduationCap, Star, Mail, Award, ExternalLink, User } from "lucide-react"
 import { useState, useEffect } from "react"
-import { useAuth } from "../../frontend/lib/auth-context"
+import { useAuth } from "../../Frontend/lib/auth-context"
 import { Input } from "./ui/input"
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import {getSupervisors} from "../../frontend/lib/api";
+import {getSupervisors} from "../../Frontend/lib/api";
 import { InteractiveBackground } from "./Backgrounds";
 import { Link, useNavigate } from "react-router-dom";
 import { Badge } from "./ui/badge";

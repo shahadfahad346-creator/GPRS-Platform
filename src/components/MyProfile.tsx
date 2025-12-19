@@ -7,7 +7,7 @@ import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { IdeaDetailModal } from "./IdeaDetailModal";
-import { useAuth } from "../../frontend/lib/auth-context";
+import { useAuth } from "../../Frontend/lib/auth-context";
 import { ChevronDown, ChevronUp, EyeOff } from 'lucide-react';
 import {
   ArrowLeft,

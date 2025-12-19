@@ -11,9 +11,9 @@ import {
   TrendingDown, Info
 } from "lucide-react";
 import { InteractiveBackground } from "./Backgrounds";
-import { useAuth } from '../../frontend/lib/auth-context';
+import { useAuth } from '../../Frontend/lib/auth-context';
 import { toast } from "sonner";
-import { apiClient } from "../../frontend/api-fastapi";
+import { apiClient } from "../../Frontend/api-fastapi";
 import { ExternalLink,  } from "lucide-react";
 
 interface CourseLinkProps {

@@ -7,8 +7,8 @@ import { ArrowLeft, Search, Sparkles, Calendar, BookOpen, FileText, Eye, Users, 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { ScrollArea } from "./ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
-import { getProjects } from "../../frontend/lib/api";
-import { useAuth } from "../../frontend/lib/auth-context";
+import { getProjects } from "../../Frontend/lib/api";
+import { useAuth } from "../../Frontend/lib/auth-context";
 import { InteractiveBackground } from "./Backgrounds";
 import { useState, useEffect, useCallback } from "react";
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "./frontend/lib/auth-context";
+import { AuthProvider, useAuth } from "./Frontend/lib/auth-context";
 import { 
   Header, 
   Hero, 
@@ -18,11 +18,11 @@ import {
   Login,
   SignUp, 
   SupervisorDashboard, 
-} from "./frontend/components";
+} from "./Frontend/components";
 import { TeamInvitations } from "./src/components/TeamInvitations";
 import { toast, Toaster } from 'sonner';
 import { SupervisorProfile } from "./src/components/SupervisorProfile";
-import "./frontend/styles/globals.css";
+import "./Frontend/styles/globals.css";
 
 // Interfaces 
 interface GroupMember {

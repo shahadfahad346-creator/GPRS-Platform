@@ -4,7 +4,7 @@ import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
-import { useAuth } from "../../frontend/lib/auth-context";
+import { useAuth } from "../../Frontend/lib/auth-context";
 import {
   ArrowLeft,
   User,

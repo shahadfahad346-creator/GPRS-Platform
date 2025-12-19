@@ -7,7 +7,7 @@ import { Label } from "./ui/label";
 import { Card } from "./ui/card";
 import { Checkbox } from "./ui/checkbox";
 import { GraduationCap, UserCheck, Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, ArrowLeft } from "lucide-react";
-import { useAuth } from "../../frontend/lib/auth-context";
+import { useAuth } from "../../Frontend/lib/auth-context";
 import { toast } from "sonner";
 import { InteractiveBackground } from "./Backgrounds";
 

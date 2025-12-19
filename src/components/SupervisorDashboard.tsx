@@ -32,7 +32,7 @@ import {
   Users,
   Rocket
 } from "lucide-react";
-import { useAuth } from "../../frontend/lib/auth-context";
+import { useAuth } from "../../Frontend/lib/auth-context";
 import { InteractiveBackground, SimpleInteractiveBackground } from "./Backgrounds";
 import { StudentFullProfile } from "./StudentFullProfile";
 import { ProjectArchive } from "./ProjectArchive";

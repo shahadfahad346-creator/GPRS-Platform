@@ -3,7 +3,7 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
 import { Alert, AlertDescription } from './ui/alert';
 import { Database, AlertTriangle, CheckCircle2, Loader2, RefreshCw } from 'lucide-react';
-import { API_BASE_URL } from '../../frontend/lib/api';
+import { API_BASE_URL } from '../../Frontend/lib/api';
 
 
 interface MigrationResult {

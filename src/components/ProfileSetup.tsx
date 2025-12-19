@@ -5,9 +5,9 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Card } from "./ui/card";
 import { ArrowRight, Sparkles, CheckCircle2 } from "lucide-react";
-import { useAuth } from "../../frontend/lib/auth-context";
+import { useAuth } from "../../Frontend/lib/auth-context";
 import { InteractiveBackground } from "./Backgrounds";
-import { updateUser } from "../../frontend/lib/api";
+import { updateUser } from "../../Frontend/lib/api";
 
 interface ProfileSetupProps {
   onComplete: () => void;
