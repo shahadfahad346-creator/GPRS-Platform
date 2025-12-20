@@ -78,7 +78,13 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // API Configuration
-const API_BASE_URL = 'http://localhost:5000/api';
+const isDevelopment = 
+  window.location.hostname === 'localhost' || 
+  window.location.hostname === '127.0.0.1';
+
+const API_BASE_URL = isDevelopment
+  ? 'http://localhost:5000/api'
+  : 'https://gprs-platform.onrender.com/api';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);

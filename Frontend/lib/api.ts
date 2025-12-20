@@ -1,6 +1,12 @@
 // src/lib/api.ts - Updated for Flask Backend
 
-export const API_BASE_URL = 'http://localhost:5000/api';
+const isDevelopment = 
+  window.location.hostname === 'localhost' || 
+  window.location.hostname === '127.0.0.1';
+
+export const API_BASE_URL = isDevelopment
+  ? 'http://localhost:5000/api'
+  : 'https://gprs-platform.onrender.com/api';
 
 async function apiRequest(endpoint: string, options: RequestInit = {}) {
   try {
