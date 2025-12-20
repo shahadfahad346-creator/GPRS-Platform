@@ -51,7 +51,7 @@ class SerpAPIService:
             
             headers = {"User-Agent": "Academic Research System"}
             
-            response = requests.get(papers_url, params=params, headers=headers, timeout=15)
+            response = requests.get(papers_url, params=params, headers=headers, timeout=59)
             
             if response.status_code != 200:
                 return []
