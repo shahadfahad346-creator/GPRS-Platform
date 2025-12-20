@@ -23,15 +23,16 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 
-# ✅ إضافة Frontend URL
 CORS(app, resources={
     r"/*": {
         "origins": [
-            "http://localhost:5173",
-            "https://gprs-frontend.onrender.com"  # ← أضف هذا
-        ],
-        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization"]
+        "http://localhost:5173",
+         "http://localhost:3000",
+         "https://gprs-frontend.onrender.com"  # ← رابط Frontend
+     ],
+        "supports_credentials": True,
+        "allow_headers": ["Content-Type", "Authorization"],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
     }
 })
 
