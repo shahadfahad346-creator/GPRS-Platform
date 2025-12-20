@@ -44,6 +44,15 @@ import { TeamManagement } from "./TeamManagement";
 import { TeamInvitations } from "./TeamInvitations";
 import axios from 'axios';
 
+const isDevelopment = 
+  window.location.hostname === 'localhost' || 
+  window.location.hostname === '127.0.0.1';
+
+const API_BASE_URL = isDevelopment
+  ? 'http://localhost:5000/api'
+  : 'https://gprs-platform.onrender.com/api';
+
+
 interface MyProfileProps {
   onBack: () => void;
   onViewMember?: (memberId: string) => void;
@@ -170,7 +179,7 @@ useEffect(() => {
       console.log("🔄 Fetching user data for:", authUser.email);
       setLoading(true);
 
-      const response = await fetch("http://localhost:5000/api/profile/get", {
+      const response = await fetch(`${API_BASE_URL}/profile/get`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -292,7 +301,7 @@ const handleAgreeOnIdea = async (idea: any) => {
 
   setAgreeLoading(true);
   try {
-    const res = await fetch('http://localhost:5000/api/group/agree-idea', {
+    const res = await fetch(`${API_BASE_URL}/group/agree-idea`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId: user._id, ideaId })
@@ -340,7 +349,7 @@ const handleRemoveAgreement = async () => {
 
   setRemoveAgreementLoading(true);
   try {
-    const res = await fetch('http://localhost:5000/api/group/remove-agreement', {
+    const res = await fetch(`${API_BASE_URL}/group/remove-agreement`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId: user._id })
@@ -401,7 +410,7 @@ useEffect(() => {
       try {
         setIsSyncing(true);
 
-        const response = await fetch("http://localhost:5000/api/profile/get", {
+        const response = await fetch(`${API_BASE_URL}/profile/get`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -612,7 +621,7 @@ const handleToggleVisibility = async (idea: any) => {
 
   try {
     const res = await fetch(
-      'http://localhost:5000/api/profile/update-idea-visibility',
+      `${API_BASE_URL}/profile/update-idea-visibility`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -663,7 +672,7 @@ const handleDeleteIdea = async (idea: any) => {
 
   try {
     const res = await fetch(
-      `http://localhost:5000/api/students/profile/ideas/${ideaId}`,
+      `${API_BASE_URL.replace('/api', '')}/students/profile/ideas/${ideaId}`,
       {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
@@ -716,7 +725,7 @@ const handleSave = async () => {
     // 🔍 طباعة البيانات الكاملة
     console.log("💾 [MyProfile] Full Profile Data:", JSON.stringify(profileData, null, 2));
 
-    const response = await fetch("http://localhost:5000/api/profile/update", {
+ const response = await fetch(`${API_BASE_URL}/profile/update`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -805,7 +814,7 @@ const handleAddSkill = () => {
     const newVisibility = !currentVisibility;
     console.log('Sending request with:', { userId: authUser._id, email: authUser.email, ideaId, visible: newVisibility });
     
-    const response = await axios.post('http://localhost:5000/api/profile/update-idea-visibility', {
+    const response = await axios.post(`${API_BASE_URL}/profile/update-idea-visibility`, {
       userId: authUser._id,
       email: authUser.email,
       ideaId,
