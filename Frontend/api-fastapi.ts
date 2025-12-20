@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { API_BASE_URL, ENDPOINTS, STORAGE_KEYS } from '../Frontend/config';
+import { API_BASE_URL, FLASK_API_URL, ENDPOINTS, FLASK_ENDPOINTS, STORAGE_KEYS } from '../Frontend/config';
 import  { AxiosResponse, AxiosError} from 'axios';
 import { InternalAxiosRequestConfig } from 'axios';
 
@@ -83,12 +83,12 @@ export const clearAuthToken = () => {
 };
 
 export const login = async (data: LoginRequest): Promise<AuthResponse> => {
-  const response = await axios.post(`${API_BASE_URL}/auth/login`, data);
+  const response = await axios.post(`${FLASK_API_URL}${FLASK_ENDPOINTS.AUTH.LOGIN}`, data);
   return response.data;
 };
 
 export const register = async (data: RegisterRequest): Promise<void> => {
-  await axios.post(`${API_BASE_URL}/auth/register`, data);
+  await axios.post(`${FLASK_API_URL}${FLASK_ENDPOINTS.AUTH.REGISTER}`, data);
 };
 
 export const getCurrentUser = async () => {
@@ -96,7 +96,7 @@ export const getCurrentUser = async () => {
   if (!token) {
     throw new Error('No authentication token found');
   }
-  const response = await axios.get(`${API_BASE_URL}/students/profile`, {
+  const response = await axios.get(`${FLASK_API_URL}${FLASK_ENDPOINTS.PROFILE.GET}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

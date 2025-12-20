@@ -11,7 +11,7 @@ import {
   RegisterRequest, 
   AuthResponse 
 } from './api-fastapi';
-import { STORAGE_KEYS, API_BASE_URL, ENDPOINTS } from "./config";
+import { STORAGE_KEYS, API_BASE_URL, FLASK_API_URL, ENDPOINTS, FLASK_ENDPOINTS } from "./config";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -131,7 +131,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       
       const response = await axios.put(
-        `${API_BASE_URL}${ENDPOINTS.STUDENTS.PROFILE}`,
+  `${FLASK_API_URL}${FLASK_ENDPOINTS.PROFILE.UPDATE}`,
         {
           name: profileData.name,
           skills: profileData.skills || [],
@@ -192,7 +192,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       
       const response = await axios.get(
-        `${API_BASE_URL}${ENDPOINTS.STUDENTS.PROFILE}`,
+  `${FLASK_API_URL}${FLASK_ENDPOINTS.PROFILE.GET}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
