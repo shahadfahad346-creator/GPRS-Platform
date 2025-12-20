@@ -27,9 +27,8 @@ app = FastAPI(
 # ========================================
 # 🌐 CORS Configuration
 # ========================================
-app = FastAPI(title="GPRS Analysis API")
 
-# ✅ إضافة CORS
+#  إضافة CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
