@@ -132,7 +132,7 @@ def proxy_to_fastapi(path):
         return response
     
     # Forward request to FastAPI
-    fastapi_url = f'http://localhost:8001/analysis/{path}'
+    fastapi_url = f'https://gprs-fastapi.onrender.com/analysis/{path}'
     
     try:
         resp = requests.request(
@@ -2259,6 +2259,6 @@ def remove_agreement():
 
 if __name__ == '__main__':
     print("Flask server starting...")
-    print("Available at: http://127.0.0.1:5000")
+    print("Available at: https://gprs-platform.onrender.com")
     print("MongoDB connected to database: GPRS")
     app.run(debug=True, host='0.0.0.0', port=5000)
